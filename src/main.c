@@ -33,6 +33,31 @@ int main(int argc, char *argv[])
                 printf("LEFT_PAREN ( null\n");
             else if (c == ')')
                 printf("RIGHT_PAREN ) null\n");
+            else if (c == '{')
+                printf("LEFT_BRACE { null\n");
+            else if (c == '}')
+                printf("RIGHT_BRACE } null\n");
+            else if (c == ',')
+                printf("COMMA , null\n");
+            else if (c == ';')
+                printf("SEMICOLON ; null\n");
+            else if (c == '=')
+                printf("EQUALS = null\n");
+            else if (c == '+')
+                printf("PLUS + null\n");
+            else if (c == '-')
+                printf("MINUS - null\n");
+            else if (c == '*')
+                printf("ASTERISK * null\n");
+            else if (c == '/')
+                printf("SLASH / null\n");
+            else if (c == ' ')
+                continue; // Skip whitespace
+            else if (c == '\n')
+                continue; // Skip newlines
+            else
+                printf("UNKNOWN %c null\n", c);
+
         }
         printf("EOF  null\n"); // Placeholder, replace this line when implementing
                                // the scanner
