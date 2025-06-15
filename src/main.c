@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
             else if (c == '-')
                 printf("MINUS - null\n");
             else if (c == '*')
-                printf("ASTERISK * null\n");
+                printf("STAR * null\n");
             else if (c == '/')
                 printf("SLASH / null\n");
             else if (c == ' ')
