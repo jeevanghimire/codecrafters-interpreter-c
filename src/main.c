@@ -4,12 +4,6 @@
 
 char *read_file_contents(const char *filename);
 
-char advance()
-{
-    // Placeholder function to simulate tokenization
-    // In a real implementation, this would return the next token from the input
-    return 'a'; // Example token
-}
 int main(int argc, char *argv[])
 {
     // Disable output buffering
@@ -26,39 +20,22 @@ int main(int argc, char *argv[])
 
     if (strcmp(command, "tokenize") == 0)
     {
-        // You can use print statements as follows for debugging, they'll be visible when running tests.
+        // You can use print statements as follows for debugging, they'll be visible
+        // when running tests.
         fprintf(stderr, "Logs from your program will appear here!\n");
 
         char *file_contents = read_file_contents(argv[2]);
 
-        // Uncomment this block to pass the first stage
-        if (strlen(file_contents) > 0)
+        for (long cursor = 0; file_contents[cursor] != '\0'; cursor++)
         {
-            fprintf(stderr, "Scanner not implemented\n");
-            exit(1);
+            char c = file_contents[cursor];
+            if (c == '(')
+                printf("LEFT_PAREN ( null\n");
+            else if (c == ')')
+                printf("RIGHT_PAREN ) null\n");
         }
-        // Placeholder, replace this line when implementing the scanner
-        // scan the parenthesis
-        if (file_contents == NULL)
-        {
-            fprintf(stderr, "Failed to read file contents\n");
-            return 1;
-        }
-        else
-        {
-            // Here you would implement the actual tokenization logic
-            // taking input from the file to see at first
-            char Token = advance();
-            switch (Token)
-            {
-            case '(':
-                return newToken ( '(', 0, 0);
-                
-            
-            default:
-                break;
-            }
-        }
+        printf("EOF  null\n"); // Placeholder, replace this line when implementing
+                               // the scanner
 
         free(file_contents);
     }
