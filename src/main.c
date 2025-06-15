@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     // Disable output buffering
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
+    char exit_code = 0;
 
     if (argc < 3)
     {
@@ -26,7 +27,8 @@ int main(int argc, char *argv[])
 
         char *file_contents = read_file_contents(argv[2]);
 
-        for (long cursor = 0; file_contents[cursor] != '\0'; cursor++)
+        size_t line = 1;
+        for (long cursor = 0; file_contents[cursor] != '\0'; ++cursor)
         {
             char c = file_contents[cursor];
             if (c == '(')
@@ -39,25 +41,24 @@ int main(int argc, char *argv[])
                 printf("RIGHT_BRACE } null\n");
             else if (c == ',')
                 printf("COMMA , null\n");
-            else if (c == ';')
-                printf("SEMICOLON ; null\n");
-            else if (c == '=')
-                printf("EQUALS = null\n");
-            else if (c == '+')
-                printf("PLUS + null\n");
+            else if (c == '.')
+                printf("DOT . null\n");
             else if (c == '-')
                 printf("MINUS - null\n");
-            else if (c == '*')
-                printf("STAR * null\n");
+            else if (c == '+')
+                printf("PLUS + null\n");
+            else if (c == ';')
+                printf("SEMICOLON ; null\n");
             else if (c == '/')
                 printf("SLASH / null\n");
-            else if (c == ' ')
-                continue; // Skip whitespace
-            else if (c == '\n')
-                continue; // Skip newlines
+            else if (c == '*')
+                printf("STAR * null\n");
             else
-                printf("DOT %c null\n", c);
-
+            {
+                fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line,
+                        c);
+                exit_code = 65;
+            }
         }
         printf("EOF  null\n"); // Placeholder, replace this line when implementing
                                // the scanner
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    return 0;
+    return exit_code;
 }
 
 char *read_file_contents(const char *filename)
