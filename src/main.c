@@ -27,7 +27,16 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Scanner not implemented\n");
             exit(1);
         } 
-        printf("EOF  null\n"); // Placeholder, replace this line when implementing the scanner
+          // Placeholder, replace this line when implementing the scanner
+            //scan the parenthesis
+        if (file_contents == NULL) {
+            fprintf(stderr, "Failed to read file contents\n");
+            return 1;
+        }else{
+            // Here you would implement the actual tokenization logic
+            
+
+        }
         
         free(file_contents);
     } else {
