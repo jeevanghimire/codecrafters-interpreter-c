@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             else if (c == '\n')
                 continue; // Skip newlines
             else
-                printf("UNKNOWN %c null\n", c);
+                printf("DOT %c null\n", c);
 
         }
         printf("EOF  null\n"); // Placeholder, replace this line when implementing
