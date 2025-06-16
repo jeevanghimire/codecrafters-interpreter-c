@@ -189,7 +189,32 @@ int main(int argc, char *argv[])
                         }
                     }
                     CapitalizedIdentifier[length] = '\0';
-                    printf("%s %s null\n", CapitalizedIdentifier, identifier);
+
+                    // List of keywords to check.
+                    const char *keywords[] = {
+                        "and", "class", "else", "false",
+                        "for", "fun", "if", "nil",
+                        "or", "print", "return", "super",
+                        "this", "true", "var", "while"
+                    };
+                    int isKeyword = 0;
+                    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
+                    {
+                        if (strcmp(identifier, keywords[i]) == 0)
+                        {
+                            isKeyword = 1;
+                            break;
+                        }
+                    }
+                    if (isKeyword)
+                    {
+                        printf("IDENTIFIER Keyword null\n");
+                    }
+                    else
+                    {
+                        printf("%s %s null\n", CapitalizedIdentifier, identifier);
+                    }
+                    free(identifier);
                     free(identifier);
                     // Decrement to counter the for-loop's auto increment
                     cursor--;
