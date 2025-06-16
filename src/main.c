@@ -28,154 +28,41 @@ int main(int argc, char *argv[])
         char *file_contents = read_file_contents(argv[2]);
 
         size_t line = 1;
-        for (long cursor = 0; file_contents[cursor] != '\0'; ++cursor)
+        for (size_t cursor = 0; file_contents[cursor] != '\0'; cursor++)
         {
             char c = file_contents[cursor];
-            if (c == '(')
-                printf("LEFT_PAREN ( null\n");
-            else if (c == ')')
-                printf("RIGHT_PAREN ) null\n");
-            else if (c == '{')
-                printf("LEFT_BRACE { null\n");
-            else if (c == '}')
-                printf("RIGHT_BRACE } null\n");
-            else if (c == ',')
-                printf("COMMA , null\n");
-            else if (c == '.')
-                printf("DOT . null\n");
-            else if (c == '-')
-                printf("MINUS - null\n");
-            else if (c == '+')
-                printf("PLUS + null\n");
-            else if (c == ';')
-                printf("SEMICOLON ; null\n");
-            else if (c == '/')
+            switch (c)
             {
+            case '(': printf("LEFT_PAREN ( null\n"); break;
+            case ')': printf("RIGHT_PAREN ) null\n"); break;
+            case '{': printf("LEFT_BRACE { null\n"); break;
+            case '}': printf("RIGHT_BRACE } null\n"); break;
+            case ',': printf("COMMA , null\n"); break;
+            case '.': printf("DOT . null\n"); break;
+            case '-': printf("MINUS - null\n"); break;
+            case '+': printf("PLUS + null\n"); break;
+            case ';': printf("SEMICOLON ; null\n"); break;
+            case '*': printf("STAR * null\n"); break;
+            case ' ':
+            case '\t':
+                break;
+            case '\n':
+                line++;
+                break;
+            case '/':
                 if (file_contents[cursor + 1] == '/')
                 {
-                    // Skip the rest of the line
                     while (file_contents[cursor] != '\n' && file_contents[cursor] != '\0')
                         cursor++;
-                }
-                else if (file_contents[cursor + 1] == '*')
-                {
-                    // Skip block comment
-                    cursor += 2; // Skip the '/*'
-                    while (!(file_contents[cursor] == '*' && file_contents[cursor + 1] == '/'))
-                    {
-                        if (file_contents[cursor] == '\n')
-                            line++;
-                        cursor++;
-                    }
-                    cursor++; // Skip the '*/'
                 }
                 else
                 {
                     printf("SLASH / null\n");
                 }
+                break;
+            default:
+                break;
             }
-            else if (c == ' ')
-            {
-                // Ignore whitespace
-            }
-            else if (c == '\n')
-            {
-                line++;
-            }
-            else if (c == '\t')
-            {
-                // Ignore tabs
-            }
-            else if (c == '*')
-                printf("STAR * null\n");
-
-            else if (c == '=' && file_contents[cursor + 1] == '=')
-            {
-                printf("EQUAL_EQUAL == null\n");
-                cursor++; // Skip the next character
-            }
-            else if (c == '=')
-                printf("EQUAL = null\n");
-            else if (c == '!')
-            {
-                if (file_contents[cursor + 1] == '=')
-                {
-                    printf("BANG_EQUAL != null\n");
-                    cursor++; // Skip the next character
-                }
-                else
-                {
-                    printf("BANG ! null\n");
-                }
-            }
-            else if (c == '<')
-            {
-                if (file_contents[cursor + 1] == '=')
-                {
-                    printf("LESS_EQUAL <= null\n");
-                    cursor++; // Skip the next character
-                }
-                else
-                {
-                    printf("LESS < null\n");
-                }
-            }
-            else if (c == '>')
-            {
-                if (file_contents[cursor + 1] == '=')
-                {
-                    printf("GREATER_EQUAL >= null\n");
-                    cursor++; // Skip the next character
-                }
-                else
-                {
-                    printf("GREATER > null\n");
-                }
-            }
-            else if (c == '"')
-            {
-                size_t start = ++cursor;
-                while (file_contents[cursor] != '"' && file_contents[cursor] != '\0')
-                    cursor++;
-
-                if (file_contents[cursor] == '"')
-                {
-                    size_t length = cursor - start;
-                    char *string_literal = malloc(length + 1);
-                    strncpy(string_literal, &file_contents[start], length);
-                    string_literal[length] = '\0';
-                    printf("STRING \"%s\" null\n", string_literal);
-                    free(string_literal);
-                }
-                else
-                {
-                    fprintf(stderr, "[line %zu] Error: Unterminated string.\n", line);
-                    exit_code = 65;
-                }
-            }
-            else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
-            {
-                size_t start = cursor;
-                while ((file_contents[cursor] >= 'a' && file_contents[cursor] <= 'z') ||
-                        (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
-                        (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
-                        file_contents[cursor] == '_')
-                    cursor++;
-
-                size_t length = cursor - start;
-                char *identifier =
-                    malloc(length + 1);
-                strncpy(identifier, &file_contents[start], length);
-                identifier[length] = '\0';
-            }
-            
-            else
-            {
-                fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line,
-                        c);
-                exit_code = 65;
-            }
-        }
         printf("EOF  null\n"); // Placeholder, replace this line when implementing
                                // the scanner
 
