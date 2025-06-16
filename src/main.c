@@ -49,9 +49,11 @@ int main(int argc, char *argv[])
                 printf("PLUS + null\n");
             else if (c == ';')
                 printf("SEMICOLON ; null\n");
-            else if (c == '/');
+            else if (c == '/')
+                continue; // Skip comments for now
             else if (c == '*')
                 printf("STAR * null\n");
+
             else if (c == '=' && file_contents[cursor + 1] == '=')
             {
                 printf("EQUAL_EQUAL == null\n");
