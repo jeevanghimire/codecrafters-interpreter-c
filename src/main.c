@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
                 {
                     while (file_contents[cursor] != '\n' && file_contents[cursor] != '\0')
                         cursor++;
-                        line ++;
+                    line++;
                 }
                 else if (file_contents[cursor + 1] == '*')
                 {
                     cursor += 2;
                     while (!(file_contents[cursor] == '*' && file_contents[cursor + 1] == '/') &&
-                            file_contents[cursor] != '\0')
+                           file_contents[cursor] != '\0')
                     {
                         if (file_contents[cursor] == '\n')
                             line++;
@@ -80,10 +80,9 @@ int main(int argc, char *argv[])
                     if (file_contents[cursor] == '*')
                         cursor++;
 
-                    //comment and skip the closing slash increase the line by 1 if it was a newline
+                    // If the next character is the closing slash, then consume it.
                     if (file_contents[cursor] == '/')
                         cursor++;
-                    
                 }
                 else
                 {
@@ -144,35 +143,35 @@ int main(int argc, char *argv[])
                     printf("GREATER > null\n");
                 }
                 break;
-            case '"':
-            {
-                size_t start = ++cursor;
-                while (file_contents[cursor] != '"' && file_contents[cursor] != '\0')
-                    cursor++;
-                if (file_contents[cursor] == '"')
+                case '"':
                 {
-                    size_t length = cursor - start;
-                    char *string_literal = malloc(length + 1);
-                    strncpy(string_literal, &file_contents[start], length);
-                    string_literal[length] = '\0';
-                    printf("STRING \"%s\" %s\n", string_literal);
-                    free(string_literal);
+                    size_t start = ++cursor;
+                    while (file_contents[cursor] != '"' && file_contents[cursor] != '\n' && file_contents[cursor] != '\0')
+                        cursor++;
+                    if (file_contents[cursor] == '"')
+                    {
+                        size_t length = cursor - start;
+                        char *string_literal = malloc(length + 1);
+                        strncpy(string_literal, &file_contents[start], length);
+                        string_literal[length] = '\0';
+                        printf("STRING \"%s\" %s\n", string_literal, string_literal);
+                        free(string_literal);
+                    }
+                    else
+                    {
+                        fprintf(stderr, "[line %zu] Error: Unterminated string.\n", line);
+                        exit_code = 65; // Exit code for error
+                    }
+                    break;
                 }
-                else
-                {
-                    fprintf(stderr, "[line %zu] Error: Unterminated string.\n", line);
-                    exit_code = 0;
-                }
-                break;
-            }
-            default:
+                default:
                 if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
                 {
                     size_t start = cursor;
-                    while ( (file_contents[cursor] >= 'a' && file_contents[cursor] <= 'z') ||
-                            (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
-                            (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
-                            file_contents[cursor] == '_')
+                    while ((file_contents[cursor] >= 'a' && file_contents[cursor] <= 'z') ||
+                           (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
+                           (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
+                           file_contents[cursor] == '_')
                     {
                         cursor++;
                     }
@@ -182,13 +181,64 @@ int main(int argc, char *argv[])
                     identifier[length] = '\0';
                     printf("IDENTIFIER %s null\n", identifier);
                     free(identifier);
+                    // Decrement to counter the for-loop's auto increment
+                    cursor--;
+                }
+                else if (c >= '0' && c <= '9')
+                {
+                    // Handle numbers: both integer and floating-point.
+                    size_t start = cursor;
+                    while (file_contents[cursor] >= '0' && file_contents[cursor] <= '9')
+                        cursor++;
+                    if (file_contents[cursor] == '.')
+                    {
+                        cursor++;
+                        while (file_contents[cursor] >= '0' && file_contents[cursor] <= '9')
+                            cursor++;
+
+                        size_t length = cursor - start;
+                        char *raw_number = malloc(length + 1);
+                        strncpy(raw_number, &file_contents[start], length);
+                        raw_number[length] = '\0';
+
+                        char *parsed_number = strdup(raw_number);
+                        char *dot = strchr(parsed_number, '.');
+                        if (dot)
+                        {
+                            char *end = parsed_number + strlen(parsed_number) - 1;
+                            while (end > dot && *end == '0')
+                            {
+                                *end = '\0';
+                                end--;
+                            }
+                            if (end == dot)
+                            {
+                                end++;
+                                *end++ = '0';
+                                *end = '\0';
+                            }
+                        }
+                        printf("NUMBER %s %s\n", raw_number, parsed_number);
+                        free(raw_number);
+                        free(parsed_number);
+                    }
+                    else
+                    {
+                        size_t length = cursor - start;
+                        char *number = malloc(length + 1);
+                        strncpy(number, &file_contents[start], length);
+                        number[length] = '\0';
+                        printf("NUMBER %s %s.0\n", number, number);
+                        free(number);
+                    }
+                    // Decrement to counter the for-loop's auto increment and avoid skipping the next character.
                     cursor--;
                 }
                 else
                 {
-                    // Handle unexpected characters
+                    // Handle unexpected characters.
                     fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line, c);
-                    exit_code = 65;
+                    exit_code = 65; // Exit code for error
                 }
                 break;
             }
@@ -204,7 +254,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    return 0;
+    return exit_code;
 }
 
 char *read_file_contents(const char *filename)
