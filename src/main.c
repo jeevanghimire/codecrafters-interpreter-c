@@ -49,8 +49,7 @@ int main(int argc, char *argv[])
                 printf("PLUS + null\n");
             else if (c == ';')
                 printf("SEMICOLON ; null\n");
-            else if (c == '/')
-                printf("SLASH / null\n");
+            else if (c == '/');
             else if (c == '*')
                 printf("STAR * null\n");
             else if (c == '=' && file_contents[cursor + 1] == '=')
@@ -132,6 +131,7 @@ int main(int argc, char *argv[])
                 strncpy(identifier, &file_contents[start], length);
                 identifier[length] = '\0';
             }
+            
             else
             {
                 fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line,
