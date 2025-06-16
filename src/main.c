@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
                 {
                     size_t start = cursor;
                     while ((file_contents[cursor] >= 'a' && file_contents[cursor] <= 'z') ||
-                           (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
-                           (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
-                           file_contents[cursor] == '_')
+                            (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
+                            (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
+                            file_contents[cursor] == '_')
                     {
                         cursor++;
                     }
@@ -179,7 +179,17 @@ int main(int argc, char *argv[])
                     char *identifier = malloc(length + 1);
                     strncpy(identifier, &file_contents[start], length);
                     identifier[length] = '\0';
-                    printf("IF %s null\n", identifier);
+                    char CapitalizedIdentifier[256];
+                    for (size_t i = 0; i < length; i++)
+                    {
+                        CapitalizedIdentifier[i] = identifier[i];
+                        if (CapitalizedIdentifier[i] >= 'a' && CapitalizedIdentifier[i] <= 'z')
+                        {
+                            CapitalizedIdentifier[i] -= 32; // Convert to uppercase
+                        }
+                    }
+                    CapitalizedIdentifier[length] = '\0';
+                    printf("%s %s null\n", CapitalizedIdentifier, identifier);
                     free(identifier);
                     // Decrement to counter the for-loop's auto increment
                     cursor--;
