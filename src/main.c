@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
                 {
                     while (file_contents[cursor] != '\n' && file_contents[cursor] != '\0')
                         cursor++;
+                        line ++;
                 }
                 else if (file_contents[cursor + 1] == '*')
                 {
@@ -78,8 +79,11 @@ int main(int argc, char *argv[])
                     }
                     if (file_contents[cursor] == '*')
                         cursor++;
+
+                    //comment and skip the closing slash increase the line by 1 if it was a newline
                     if (file_contents[cursor] == '/')
                         cursor++;
+                    
                 }
                 else
                 {
@@ -182,6 +186,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
+                    // Handle unexpected characters
                     fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line, c);
                     exit_code = 65;
                 }
