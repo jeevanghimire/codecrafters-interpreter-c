@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
                         "and", "class", "else", "false",
                         "for", "fun", "if", "nil",
                         "or", "print", "return", "super",
-                        "this", "true", "while"
+                        "this", "true"
                     };
                     int isKeyword = 0;
                     for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++)
