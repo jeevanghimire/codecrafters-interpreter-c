@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
                 {
                     cursor += 2;
                     while (!(file_contents[cursor] == '*' && file_contents[cursor + 1] == '/') &&
-                           file_contents[cursor] != '\0')
+                            file_contents[cursor] != '\0')
                     {
                         if (file_contents[cursor] == '\n')
                             line++;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
                     char *string_literal = malloc(length + 1);
                     strncpy(string_literal, &file_contents[start], length);
                     string_literal[length] = '\0';
-                    printf("STRING \"%s\" null\n", string_literal);
+                    printf("STRING \"%s\" %s\n", string_literal);
                     free(string_literal);
                 }
                 else
