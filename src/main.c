@@ -50,7 +50,42 @@ int main(int argc, char *argv[])
             else if (c == ';')
                 printf("SEMICOLON ; null\n");
             else if (c == '/')
-                continue; // Skip comments for now
+            {
+                if (file_contents[cursor + 1] == '/')
+                {
+                    // Skip the rest of the line
+                    while (file_contents[cursor] != '\n' && file_contents[cursor] != '\0')
+                        cursor++;
+                }
+                else if (file_contents[cursor + 1] == '*')
+                {
+                    // Skip block comment
+                    cursor += 2; // Skip the '/*'
+                    while (!(file_contents[cursor] == '*' && file_contents[cursor + 1] == '/'))
+                    {
+                        if (file_contents[cursor] == '\n')
+                            line++;
+                        cursor++;
+                    }
+                    cursor++; // Skip the '*/'
+                }
+                else
+                {
+                    printf("SLASH / null\n");
+                }
+            }
+            else if (c == ' ')
+            {
+                // Ignore whitespace
+            }
+            else if (c == '\n')
+            {
+                line++;
+            }
+            else if (c == '\t')
+            {
+                // Ignore tabs
+            }
             else if (c == '*')
                 printf("STAR * null\n");
 
