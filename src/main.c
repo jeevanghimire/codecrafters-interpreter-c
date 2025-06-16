@@ -53,6 +53,85 @@ int main(int argc, char *argv[])
                 printf("SLASH / null\n");
             else if (c == '*')
                 printf("STAR * null\n");
+            else if (c == '=' && file_contents[cursor + 1] == '=')
+            {
+                printf("EQUAL_EQUAL == null\n");
+                cursor++; // Skip the next character
+            }
+            else if (c == '=')
+                printf("EQUAL = null\n");
+            else if (c == '!')
+            {
+                if (file_contents[cursor + 1] == '=')
+                {
+                    printf("BANG_EQUAL != null\n");
+                    cursor++; // Skip the next character
+                }
+                else
+                {
+                    printf("BANG ! null\n");
+                }
+            }
+            else if (c == '<')
+            {
+                if (file_contents[cursor + 1] == '=')
+                {
+                    printf("LESS_EQUAL <= null\n");
+                    cursor++; // Skip the next character
+                }
+                else
+                {
+                    printf("LESS < null\n");
+                }
+            }
+            else if (c == '>')
+            {
+                if (file_contents[cursor + 1] == '=')
+                {
+                    printf("GREATER_EQUAL >= null\n");
+                    cursor++; // Skip the next character
+                }
+                else
+                {
+                    printf("GREATER > null\n");
+                }
+            }
+            else if (c == '"')
+            {
+                size_t start = ++cursor;
+                while (file_contents[cursor] != '"' && file_contents[cursor] != '\0')
+                    cursor++;
+
+                if (file_contents[cursor] == '"')
+                {
+                    size_t length = cursor - start;
+                    char *string_literal = malloc(length + 1);
+                    strncpy(string_literal, &file_contents[start], length);
+                    string_literal[length] = '\0';
+                    printf("STRING \"%s\" null\n", string_literal);
+                    free(string_literal);
+                }
+                else
+                {
+                    fprintf(stderr, "[line %zu] Error: Unterminated string.\n", line);
+                    exit_code = 65;
+                }
+            }
+            else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
+            {
+                size_t start = cursor;
+                while ((file_contents[cursor] >= 'a' && file_contents[cursor] <= 'z') ||
+                        (file_contents[cursor] >= 'A' && file_contents[cursor] <= 'Z') ||
+                        (file_contents[cursor] >= '0' && file_contents[cursor] <= '9') ||
+                        file_contents[cursor] == '_')
+                    cursor++;
+
+                size_t length = cursor - start;
+                char *identifier =
+                    malloc(length + 1);
+                strncpy(identifier, &file_contents[start], length);
+                identifier[length] = '\0';
+            }
             else
             {
                 fprintf(stderr, "[line %zu] Error: Unexpected character: %c\n", line,
