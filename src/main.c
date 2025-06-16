@@ -208,13 +208,12 @@ int main(int argc, char *argv[])
                     }
                     if (isKeyword)
                     {
-                        printf("IDENTIFIER Keyword null\n");
+                        printf("IDENTIFIER %s null\n", identifier);
                     }
                     else
                     {
                         printf("%s %s null\n", CapitalizedIdentifier, identifier);
                     }
-                    free(identifier);
                     free(identifier);
                     // Decrement to counter the for-loop's auto increment
                     cursor--;
