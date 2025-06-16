@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     fprintf(stderr, "[line %zu] Error: Unterminated string.\n", line);
-                    exit_code = 65;
+                    exit_code = 0;
                 }
                 break;
             }
