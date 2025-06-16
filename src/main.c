@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    return exit_code;
+    return 0;
 }
 
 char *read_file_contents(const char *filename)
