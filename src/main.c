@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
                     char *identifier = malloc(length + 1);
                     strncpy(identifier, &file_contents[start], length);
                     identifier[length] = '\0';
-                    printf("IDENTIFIER %s null\n", identifier);
+                    printf("IF %s null\n", identifier);
                     free(identifier);
                     // Decrement to counter the for-loop's auto increment
                     cursor--;
