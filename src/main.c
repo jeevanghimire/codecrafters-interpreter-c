@@ -1,150 +1,228 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define TOKEN_LIST   \
-    X(UNKNOWN)       \
-    X(UNTERMINATED)  \
-    X(IDENTIFIER)    \
-    X(STRING)        \
-    X(NUMBER)        \
-    X(IGNORE)        \
-    X(LEFT_PAREN)    \
-    X(RIGHT_PAREN)   \
-    X(LEFT_BRACE)    \
-    X(RIGHT_BRACE)   \
-    X(COMMA)         \
-    X(DOT)           \
-    X(MINUS)         \
-    X(PLUS)          \
-    X(SEMICOLON)     \
-    X(STAR)          \
-    X(SLASH)         \
-    X(EQUAL)         \
-    X(EQUAL_EQUAL)   \
-    X(BANG)          \
-    X(BANG_EQUAL)    \
-    X(LESS)          \
-    X(LESS_EQUAL)    \
-    X(GREATER)       \
-    X(GREATER_EQUAL) \
-    X(AND)           \
-    X(CLASS)         \
-    X(ELSE)          \
-    X(FALSE)         \
-    X(FOR)           \
-    X(FUN)           \
-    X(IF)            \
-    X(NIL)           \
-    X(OR)            \
-    X(PRINT)         \
-    X(RETURN)        \
-    X(SUPER)         \
-    X(THIS)          \
-    X(TRUE)          \
-    X(VAR)           \
-    X(WHILE)
-
-#define FOR_1_CHAR_TOKENS(DO) \
-    DO('(', LEFT_PAREN)       \
-    DO(')', RIGHT_PAREN)      \
-    DO('{', LEFT_BRACE)       \
-    DO('}', RIGHT_BRACE)      \
-    DO(',', COMMA)            \
-    DO('.', DOT)              \
-    DO('-', MINUS)            \
-    DO('+', PLUS)             \
-    DO(';', SEMICOLON)        \
-    DO('*', STAR)             \
-    DO('/', SLASH)            \
-    DO('=', EQUAL)            \
-    DO('!', BANG)             \
-    DO('<', LESS)             \
-    DO('>', GREATER)
-
-#define TWOCC(A, B) ((((unsigned)A) << 8) | (B))
-#define FOR_2_CHAR_TOKENS(DO)        \
-    DO(TWOCC('=', '='), EQUAL_EQUAL) \
-    DO(TWOCC('!', '='), BANG_EQUAL)  \
-    DO(TWOCC('<', '='), LESS_EQUAL)  \
-    DO(TWOCC('>', '='), GREATER_EQUAL)
-
-typedef struct
-{
-    const char *data;
-    unsigned length;
-} string_view_t;
-
-typedef struct
-{
-    const char *start;
-    const char *at;
-    const char *end;
-    unsigned line;
-} tokenizer_t;
-
-typedef enum
-{
-#define X(v) v,
-    TOKEN_LIST
-#undef X
-        END_OF_FILE,
-} token_kind_t;
-
-typedef struct
-{
-    unsigned line;
-    token_kind_t kind;
-    string_view_t lexeme;
-    union
-    {
-        string_view_t string;
-        struct
-        {
-            long whole;
-            long decimal;
-        } number;
-    } literal;
-} token_t;
-
-struct
-{
-    token_kind_t kind;
-    const char *data;
-    unsigned length;
-} keywords[] = {
-#define KWD(K, N) \
-    {K, N, sizeof(N) - 1}
-    KWD(AND, "and"),
-    KWD(CLASS, "class"),
-    KWD(ELSE, "else"),
-    KWD(FALSE, "false"),
-    KWD(FOR, "for"),
-    KWD(FUN, "fun"),
-    KWD(IF, "if"),
-    KWD(NIL, "nil"),
-    KWD(OR, "or"),
-    KWD(PRINT, "print"),
-    KWD(RETURN, "return"),
-    KWD(SUPER, "super"),
-    KWD(THIS, "this"),
-    KWD(TRUE, "true"),
-    KWD(VAR, "var"),
-    KWD(WHILE, "while"),
-#undef KWD
-};
-size_t n_keywords = sizeof(keywords) / sizeof(*keywords);
-
-const char *kind2str[] = {
-#define X(v) #v,
-    TOKEN_LIST
-#undef X
-    "EOF",
-};
-
 char *read_file_contents(const char *filename);
-void get_next_token(tokenizer_t *tokenizer, token_t *token);
-void print_token(token_t *token);
+
+static inline int is_str_eq(char *a, char *b, size_t len)
+{
+    return strncmp(a, b, len) == 0;
+}
+char *reserved[16] = {"and", "class", "else", "false", "for", "fun",
+                      "if", "nil", "or", "print", "return", "super",
+                      "this", "true", "var", "while"};
+char *reservedU[16] = {"AND", "CLASS", "ELSE", "FALSE", "FOR", "FUN",
+                       "IF", "NIL", "OR", "PRINT", "RETURN", "SUPER",
+                       "THIS", "TRUE", "VAR", "WHILE"};
+
+int tokenize(const char *file_contents, char *tokens)
+{
+    int compile_error = 0;
+    size_t line_number = 1;
+    const size_t file_len = strlen(file_contents);
+    char *write_ptr = tokens;
+
+    if (file_len == 0)
+    {
+        write_ptr += sprintf(write_ptr, "EOF  null\n");
+        return 0;
+    }
+#define APPEND(...) write_ptr += sprintf(write_ptr, __VA_ARGS__)
+    for (size_t i = 0; i < file_len; ++i)
+    {
+        switch (file_contents[i])
+        {
+        case '(':
+            APPEND("LEFT_PAREN ( null\n");
+            break;
+        case ')':
+            APPEND("RIGHT_PAREN ) null\n");
+            break;
+        case '{':
+            APPEND("LEFT_BRACE { null\n");
+            break;
+        case '}':
+            APPEND("RIGHT_BRACE } null\n");
+            break;
+        case '*':
+            APPEND("STAR * null\n");
+            break;
+        case '.':
+            APPEND("DOT . null\n");
+            break;
+        case ',':
+            APPEND("COMMA , null\n");
+            break;
+        case '+':
+            APPEND("PLUS + null\n");
+            break;
+        case '-':
+            APPEND("MINUS - null\n");
+            break;
+        case ';':
+            APPEND("SEMICOLON ; null\n");
+            break;
+
+        case '=':
+            if (file_contents[i + 1] == '=')
+            {
+                APPEND("EQUAL_EQUAL == null\n");
+                i++;
+            }
+            else
+            {
+                APPEND("EQUAL = null\n");
+            }
+            break;
+
+        case '!':
+            if (file_contents[i + 1] == '=')
+            {
+                APPEND("BANG_EQUAL != null\n");
+                i++;
+            }
+            else
+            {
+                APPEND("BANG ! null\n");
+            }
+            break;
+
+        case '<':
+            if (file_contents[i + 1] == '=')
+            {
+                APPEND("LESS_EQUAL <= null\n");
+                i++;
+            }
+            else
+            {
+                APPEND("LESS < null\n");
+            }
+            break;
+
+        case '>':
+            if (file_contents[i + 1] == '=')
+            {
+                APPEND("GREATER_EQUAL >= null\n");
+                i++;
+            }
+            else
+            {
+                APPEND("GREATER > null\n");
+            }
+            break;
+
+        case '/':
+            if (file_contents[i + 1] == '/')
+            {
+                while (i < file_len && file_contents[i] != '\n')
+                    i++;
+                line_number++;
+            }
+            else
+            {
+                APPEND("SLASH / null\n");
+            }
+            break;
+
+        case '"':
+        {
+            char str_val[256];
+            int j = 0;
+            i++; // skip opening "
+            while (i < file_len && file_contents[i] != '"' &&
+                   file_contents[i] != '\n')
+                str_val[j++] = file_contents[i++];
+
+            str_val[j] = '\0';
+
+            if (file_contents[i] != '"')
+            {
+                fprintf(stderr, "[line %lu] Error: Unterminated string.\n",
+                        line_number);
+                compile_error = 65;
+                break;
+            }
+
+            APPEND("STRING \"%s\" %s\n", str_val, str_val);
+            break;
+        }
+
+        case '\n':
+            line_number++;
+            break;
+        case ' ':
+        case '\t':
+            break; // ignore whitespace
+
+        default:
+            if (isdigit(file_contents[i]))
+            {
+                char num[256];
+                int j = 0;
+                int is_decimal = 0;
+
+                while (i < file_len &&
+                       (isdigit(file_contents[i]) || file_contents[i] == '.'))
+                {
+                    if (file_contents[i] == '.')
+                        is_decimal = 1;
+                    num[j++] = file_contents[i++];
+                }
+                i--; // unconsume
+                num[j] = '\0';
+
+                APPEND("NUMBER %s ", num);
+                if (is_decimal)
+                {
+                    while (num[j - 1] == '0' && num[j - 2] != '.')
+                        num[--j] = '\0';
+                    APPEND("%s\n", num);
+                }
+                else
+                {
+                    APPEND("%s.0\n", num);
+                }
+            }
+            else if (isalpha(file_contents[i]) || file_contents[i] == '_')
+            {
+                char id[256];
+                int j = 0;
+
+                while (i < file_len &&
+                       (isalnum(file_contents[i]) || file_contents[i] == '_'))
+                {
+                    id[j++] = file_contents[i++];
+                }
+                i--; // unconsume
+                id[j] = '\0';
+
+                int is_keyword = 0;
+                for (int k = 0; k < 16; ++k)
+                {
+                    if (is_str_eq(reserved[k], id, strlen(reserved[k])))
+                    {
+                        APPEND("%s %s null\n", reservedU[k], reserved[k]);
+                        is_keyword = 1;
+                        break;
+                    }
+                }
+                if (!is_keyword)
+                    APPEND("IDENTIFIER %s null\n", id);
+            }
+            else
+            {
+                fprintf(stderr, "[line %lu] Error: Unexpected character: %c\n",
+                        line_number, file_contents[i]);
+                compile_error = 65;
+            }
+        }
+    }
+
+    APPEND("EOF  null\n");
+#undef APPEND
+    return compile_error;
+}
 
 int main(int argc, char *argv[])
 {
@@ -158,59 +236,64 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const char *command = argv[1];
+    char *command = argv[1];
 
-    if (strcmp(command, "tokenize") == 0)
+    int compile_error = 0; // (NO_ERROR)
+
+    if (is_str_eq(command, "tokenize", strlen("tokenize")))
+    {
+        // You can use print statements as follows for debugging, they'll be visible
+        // when running tests. fprintf(stderr, "Logs from your program will appear
+        // here!\n");
+
+        char *file_contents = read_file_contents(argv[2]);
+
+        char tokens[4096];
+        compile_error = tokenize(file_contents, tokens);
+        printf("%s", tokens);
+
+        // fflush(stderr);
+        // fflush(stdout);
+        free(file_contents);
+    }
+    else if (is_str_eq(command, "parse", strlen("parse")))
     {
         char *file_contents = read_file_contents(argv[2]);
-        tokenizer_t tokenizer = {
-            file_contents,
-            file_contents,
-            file_contents + strlen(file_contents),
-            1,
-        };
+        char tokens[4096];
+        compile_error = tokenize(file_contents, tokens);
 
-        int ret = 0;
-        while (1)
+        char *lines[100];
+        int total_lines = 0;
+        char *line_start = tokens;
+        while (*line_start)
         {
-            token_t token;
-            get_next_token(&tokenizer, &token);
-            print_token(&token);
-            if (token.kind == UNKNOWN || token.kind == UNTERMINATED)
-                ret = 65;
-            if (token.kind == END_OF_FILE)
+            lines[total_lines++] = line_start;
+            char *line_end = strchr(line_start, '\n'); // Find the end of the line
+            if (line_end)
+                *line_end = 0, line_start = line_end + 1;
+            else
                 break;
         }
 
-        free(file_contents);
-        return ret;
-    }
-    else if (strcmp(command, "parse") == 0)
-    {
-        char *file_contents = read_file_contents(argv[2]);
-        tokenizer_t tokenizer = {
-            file_contents,
-            file_contents,
-            file_contents + strlen(file_contents),
-            1,
-        };
-
-        while (1)
+        total_lines--;
+        for (int i = 0; i < total_lines; ++i)
         {
-            token_t token;
-            get_next_token(&tokenizer, &token);
-            switch (token.kind)
+            char *line = lines[i];
+            char *token = strtok(line, " ");
+
+            if (is_str_eq(token, "TRUE", strlen("TRUE")) ||
+                is_str_eq(token, "FALSE", strlen("FALSE")) ||
+                is_str_eq(token, "NIL", strlen("NIL")))
             {
-            case NIL:
-            case TRUE:
-            case FALSE:
-                printf("%.*s\n", token.lexeme.length, token.lexeme.data);
-                break;
-            default:
-                break;
-            };
-            if (token.kind == END_OF_FILE)
-                break;
+                token = strtok(0, " ");
+                printf("%s\n", token);
+            }
+            else if (is_str_eq(token, "NUMBER", strlen("NUMBER")))
+            {
+                token = strtok(0, " ");
+                token = strtok(0, " ");
+                printf("%s\n", token);
+            }
         }
 
         free(file_contents);
@@ -221,7 +304,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    return 0;
+    return compile_error;
 }
 
 char *read_file_contents(const char *filename)
@@ -258,176 +341,4 @@ char *read_file_contents(const char *filename)
     fclose(file);
 
     return file_contents;
-}
-
-static inline int at_eof(tokenizer_t *tok) { return tok->at >= tok->end; }
-
-static inline int is_newline(char c) { return c == '\r' || c == '\n'; }
-
-static inline int is_space(char c) { return c == ' ' || c == '\t'; }
-
-static inline int is_number(char c) { return c >= '0' && c <= '9'; }
-
-static inline int is_alpha(char c)
-{
-    return c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
-static inline void strip_whitespace(tokenizer_t *tok)
-{
-    while (!at_eof(tok) && is_space(*tok->at))
-        tok->at++;
-}
-
-void get_next_token(tokenizer_t *tokenizer, token_t *token)
-{
-    strip_whitespace(tokenizer);
-    token->line = tokenizer->line;
-    token->lexeme.data = tokenizer->at;
-    token->lexeme.length = 0;
-
-    if (at_eof(tokenizer))
-    {
-        token->kind = END_OF_FILE;
-        return;
-    }
-
-    char a = *(tokenizer->at + 0);
-    char b = *(tokenizer->at + 1);
-    unsigned twocc = TWOCC(a, b);
-    token->kind = UNKNOWN;
-
-    if (is_alpha(a))
-    {
-        token->kind = IDENTIFIER;
-        while (is_alpha(*tokenizer->at) || is_number(*tokenizer->at))
-            tokenizer->at++;
-        token->lexeme.length = tokenizer->at - token->lexeme.data;
-        const char *d = token->lexeme.data;
-        unsigned l = token->lexeme.length;
-        for (size_t i = 0; i < n_keywords; i++)
-        {
-            if (keywords[i].length == l && !memcmp(d, keywords[i].data, l))
-            {
-                token->kind = keywords[i].kind;
-                return;
-            }
-        }
-        return;
-    }
-
-    if (is_number(a))
-    {
-        char *end;
-        token->kind = NUMBER;
-        token->literal.number.whole = strtol(tokenizer->at, &end, 10);
-        token->literal.number.decimal = 0;
-        if (*end == '.' && is_number(*(end + 1)))
-        {
-            long dec = strtol(end + 1, &end, 10);
-            for (; dec && dec % 10 == 0; dec /= 10)
-                ;
-            token->literal.number.decimal = dec;
-        }
-        tokenizer->at = end;
-        token->lexeme.length = tokenizer->at - token->lexeme.data;
-        return;
-    }
-
-    if (a == '"')
-    {
-        for (tokenizer->at += 1; *tokenizer->at != '"'; tokenizer->at++)
-        {
-            if (at_eof(tokenizer) || is_newline(*tokenizer->at))
-            {
-                token->kind = UNTERMINATED;
-                return;
-            }
-        }
-        tokenizer->at += 1;
-        token->kind = STRING;
-        token->lexeme.length = tokenizer->at - token->lexeme.data;
-        token->literal.string.data = token->lexeme.data + 1;
-        token->literal.string.length = token->lexeme.length - 2;
-        return;
-    }
-
-    if (twocc == TWOCC('/', '/'))
-    {
-        while (!at_eof(tokenizer) && !is_newline(*tokenizer->at))
-            tokenizer->at++;
-        tokenizer->at += *tokenizer->at == '\r';
-        tokenizer->at += *tokenizer->at == '\n';
-        tokenizer->line += 1;
-        token->kind = IGNORE;
-        return;
-    }
-
-    switch (twocc)
-    {
-#define DO(S, T)         \
-    case S:              \
-        token->kind = T; \
-        break;
-        FOR_2_CHAR_TOKENS(DO)
-#undef DO
-    }
-
-    if (token->kind != UNKNOWN)
-    {
-        token->lexeme.length = 2;
-        tokenizer->at += 2;
-        return;
-    }
-
-    switch (a)
-    {
-#define DO(S, T)         \
-    case S:              \
-        token->kind = T; \
-        break;
-        FOR_1_CHAR_TOKENS(DO)
-#undef DO
-    case '\r':
-        tokenizer->at += b == '\n';
-    case '\n':
-        tokenizer->line += 1;
-        token->kind = IGNORE;
-        break;
-    }
-
-    token->lexeme.length = 1;
-    tokenizer->at += 1;
-}
-
-void print_token(token_t *token)
-{
-    if (token->kind == UNKNOWN)
-    {
-        fprintf(stderr, "[line %d] Error: Unexpected character: %c\n", token->line,
-                token->lexeme.data[0]);
-    }
-    else if (token->kind == UNTERMINATED)
-    {
-        fprintf(stderr, "[line %d] Error: Unterminated string.\n", token->line);
-    }
-    else if (token->kind != IGNORE)
-    {
-        fprintf(stdout, "%s %.*s ", kind2str[token->kind], token->lexeme.length,
-                token->lexeme.data);
-        switch (token->kind)
-        {
-        case STRING:
-            fprintf(stdout, "%.*s\n", token->literal.string.length,
-                    token->literal.string.data);
-            break;
-        case NUMBER:
-            fprintf(stdout, "%ld.%ld\n", token->literal.number.whole,
-                    token->literal.number.decimal);
-            break;
-        default:
-            fprintf(stdout, "null\n");
-            break;
-        }
-    }
 }
