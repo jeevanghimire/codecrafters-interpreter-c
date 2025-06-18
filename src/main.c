@@ -34,6 +34,9 @@ char *read_file(const char *filename) {
     fclose(f);
     return buffer;
 }
+void printString(){
+    
+}
 
 int tokenize(const char *src, char *output) {
     size_t len = strlen(src);
@@ -182,7 +185,68 @@ int main(int argc, char *argv[]) {
 
             line = strtok(NULL, "\n");
         }
-    } else {
+    } 
+    // print String for String Literal 
+    else if (is_equal(command, "print")) {
+        char *line = strtok(tokens, "\n");
+        while (line) {
+            char *type = strtok(line, " ");
+            strtok(NULL, " "); // skip raw token
+            char *value = strtok(NULL, " ");
+
+            if (is_equal(type, "STRING")) {
+                printf("%s\n", value);
+            }
+
+            line = strtok(NULL, "\n");
+        }
+    }
+    // print Identifier for Identifier Literal 
+    else if (is_equal(command, "identifier")) {
+        char *line = strtok(tokens, "\n");
+        while (line) {
+            char *type = strtok(line, " ");
+            strtok(NULL, " "); // skip raw token
+            char *value = strtok(NULL, " ");
+
+            if (is_equal(type, "IDENTIFIER")) {
+                printf("%s\n", value);
+            }
+
+            line = strtok(NULL, "\n");
+        }
+    }
+    // print Number for Number Literal 
+    else if (is_equal(command, "number")) {
+        char *line = strtok(tokens, "\n");
+        while (line) {
+            char *type = strtok(line, " ");
+            strtok(NULL, " "); // skip raw token
+            char *value = strtok(NULL, " ");
+
+            if (is_equal(type, "NUMBER")) {
+                printf("%s\n", value);
+            }
+
+            line = strtok(NULL, "\n");
+        }
+    }
+    // print Boolean for Boolean Literal 
+    else if (is_equal(command, "boolean")) {
+        char *line = strtok(tokens, "\n");
+        while (line) {
+            char *type = strtok(line, " ");
+            strtok(NULL, " "); // skip raw token
+            char *value = strtok(NULL, " ");
+
+            if (is_equal(type, "TRUE") || is_equal(type, "FALSE")) {
+                printf("%s\n", value);
+            }
+
+            line = strtok(NULL, "\n");
+        }
+    }
+    else {
         fprintf(stderr, "Unknown command: %s\n", command);
     }
 
